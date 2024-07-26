@@ -1,0 +1,87 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Project {
+  id           String        @id @default(cuid())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  name         String?
+  description  String?
+  user         User?         @relation(fields: [userId], references: [id])
+  userId       String?
+  team         Team?         @relation(fields: [teamId], references: [id])
+  teamId       String?
+  environments Environment[]
+  states       State[]
+}
+
+model Snapshot {
+  id            String       @id @default(cuid())
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  name          String?
+  description   String?
+  environment   Environment? @relation(fields: [environmentId], references: [id])
+  environmentId String?
+  user          User?        @relation(fields: [userId], references: [id])
+  userId        String?
+}
+
+model Environment {
+  id          String     @id @default(cuid())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  name        String?
+  description String?
+  user        User?      @relation(fields: [userId], references: [id])
+  userId      String?
+  project     Project?   @relation(fields: [projectId], references: [id])
+  projectId   String?
+  snapshots   Snapshot[]
+  states      State[]
+}
+
+model Team {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  name        String?
+  description String?
+  projects    Project[]
+}
+
+model State {
+  id            String       @id @default(cuid())
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  version       Int?
+  stateData     Json?
+  environment   Environment? @relation(fields: [environmentId], references: [id])
+  environmentId String?
+  user          User?        @relation(fields: [userId], references: [id])
+  userId        String?
+  project       Project?     @relation(fields: [projectId], references: [id])
+  projectId     String?
+}
+
+model User {
+  id           String        @id @default(cuid())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  firstName    String?
+  lastName     String?
+  username     String        @unique
+  email        String?       @unique
+  password     String
+  roles        Json
+  projects     Project[]
+  environments Environment[]
+  snapshots    Snapshot[]
+  states       State[]
+}
